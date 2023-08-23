@@ -79,7 +79,7 @@ class RationalKrylovSpace(SpaceStructure):
 
     @property
     def size(self) -> int:
-        return self.m
+        return self.m * self.r
 
     #%% BASIS AUGMENTATION
     def augment_basis(self):
@@ -106,7 +106,7 @@ class RationalKrylovSpace(SpaceStructure):
         Wm = matvec(Q[:, (m - 2) * r : (m - 1) * r])
 
         # Update-orthogonalization
-        self.Q, self.H = la.qr_insert(self.Q, self.H, Wm, m-1, 'col')
+        self.Q, self.H = la.qr_insert(self.Q, self.H, Wm, (m-1)*r, 'col')
 
         # Modified Gram-Schmidt - not stable enough
         # U, R = la.qr(Wm, mode="economic")

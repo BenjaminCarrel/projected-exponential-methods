@@ -19,7 +19,7 @@ class SpaceStructure:
     General space structure class. This class is meant to be inherited by other classes that define specific space structures, like Krylov spaces, rational Krylov spaces, etc.
 
     In particular, this class defines the following attributes:
-    - A: the matrix A of the linear system (A Y = X)
+    - A: the matrix A (typically from a linear system A Y = X).
     - X: the vector or matrix that defines the basis of the space.
     - size: the size of the space.
     - basis: the basis of the space.
@@ -48,6 +48,7 @@ class SpaceStructure:
         self.extra_args = extra_args
         self.n, self.r = X.shape
         self.m = 1
+        self.k = self.m
 
         # Check for symmetry
         if 'is_symmetric' in extra_args:
@@ -74,6 +75,11 @@ class SpaceStructure:
 
     @property
     def Am(self) -> ndarray:
+        """Shortcut for the reduced matrix A."""
+        return self.reduced_A
+    
+    @property
+    def Ak(self) -> ndarray:
         """Shortcut for the reduced matrix A."""
         return self.reduced_A
     

@@ -85,11 +85,19 @@ class ExtendedKrylovSpace(SpaceStructure):
     # %% Properties
     @property
     def Q1(self) -> ndarray:
-        return self.krylov_space.basis
+        return self.krylov_space.Q
+    
+    @property
+    def H1(self) -> ndarray:
+        return self.krylov_space.H
 
     @property
     def Q2(self) -> ndarray:
-        return self.inverted_krylov_space.basis
+        return self.inverted_krylov_space.Q
+    
+    @property
+    def H2(self) -> ndarray:
+        return self.inverted_krylov_space.H
     
     @property
     def Q(self) -> ndarray:
@@ -105,8 +113,7 @@ class ExtendedKrylovSpace(SpaceStructure):
         #     counter2 += self.r
         #     tot += 2 * self.r
         # Brutal way
-        Q = np.hstack((self.Q1, self.Q2))
-        Q, _ = la.qr(Q, mode="economic")
+        Q, _ = la.qr_insert(self.Q1, self.H1, self.Q2, self.m * self.r, which="col")
         return Q
 
     @property
@@ -116,7 +123,7 @@ class ExtendedKrylovSpace(SpaceStructure):
     @property
     def size(self) -> int:
         """Return the size of the extended Krylov space."""
-        return self.krylov_space.size
+        return self.krylov_space.size + self.inverted_krylov_space.size
 
     # %% Methods
     def augment_basis(self):
