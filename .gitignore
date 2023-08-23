@@ -1,0 +1,15 @@
+.idea/
+.vscode/
+.DS_Store
+__pycache__/
+.ipynb_checkpoints/
+.venv
+*.egg-info
+build/
+
+# Figures
+/figures
+*.gif
+*.jpg
+*.png
+*.pdf

@@ -1,0 +1,9 @@
+name: projected-exponential-methods
+dependencies:
+  - python >= 3.10
+  - pip
+  - numpy
+  - scipy
+  - matplotlib
+  - tqdm
+  - jupyter
