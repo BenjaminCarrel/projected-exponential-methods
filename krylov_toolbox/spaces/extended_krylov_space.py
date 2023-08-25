@@ -101,18 +101,6 @@ class ExtendedKrylovSpace(SpaceStructure):
     
     @property
     def Q(self) -> ndarray:
-        # # Re-order the two basis
-        # Q = np.zeros((self.n, 2 * self.size * self.r))
-        # counter1 = 0
-        # counter2 = 0
-        # tot = 0
-        # for _ in np.arange(self.size):
-        #     Q[:, tot : tot + self.r] = self.Q1[:, counter1 : counter1 + self.r]
-        #     Q[:, tot + self.r : tot + 2 * self.r] = self.Q2[:, counter2 : counter2 + self.r]
-        #     counter1 += self.r
-        #     counter2 += self.r
-        #     tot += 2 * self.r
-        # Brutal way
         Q, _ = la.qr_insert(self.Q1, self.H1, self.Q2, self.m * self.r, which="col")
         return Q
 

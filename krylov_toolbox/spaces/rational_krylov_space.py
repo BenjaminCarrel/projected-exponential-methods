@@ -108,14 +108,4 @@ class RationalKrylovSpace(SpaceStructure):
         # Update-orthogonalization
         self.Q, self.H = la.qr_insert(self.Q, self.H, Wm, (m-1)*r, 'col')
 
-        # Modified Gram-Schmidt - not stable enough
-        # U, R = la.qr(Wm, mode="economic")
-        # H = np.empty(m, dtype=object)
-        # for i in np.arange(m-1):
-        #     H[i] = Q[:, i * r : (i + 1) * r].T.dot(U)
-        #     U -= Q[:, i * r : (i + 1) * r].dot(H[i])
-        # Q[:, (m - 1) * r : m * r], H[m-1] = la.qr(U.dot(R), mode="economic")
-        # self.H = H
-        # # Update the basis
-        # self.Q = Q
         
