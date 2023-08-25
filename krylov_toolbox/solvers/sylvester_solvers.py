@@ -184,7 +184,7 @@ def solve_sparse_low_rank_sylvester(A: spmatrix,
         # print(crit)
         if crit < tol or k == max_iter - 1:
             # truncate to machine precision since the criterion overestimates the error
-            # NOTE: the user might want to change this, but works fine in most cases and reduces the cost
+            # NOTE: the user might want to change this, but works fine and reduces the cost
             return Xk.to_svd().truncate() 
 
         else:
