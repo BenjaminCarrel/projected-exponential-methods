@@ -13,3 +13,6 @@ build/
 *.jpg
 *.png
 *.pdf
+
+# Data
+*.pkl

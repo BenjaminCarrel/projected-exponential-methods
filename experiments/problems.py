@@ -154,19 +154,6 @@ def make_lyapunov_heat_square_with_time_dependent_special(size: int = 128, q: in
     Q, _ = np.linalg.qr(M, mode='reduced')
     D = SVD(Q, sing_vals_C, Q)
     def G(t, X):
-        # return 4 * np.exp(t) + (Xs * (1 - Xs) + Ys * (1 - Ys)) * np.exp(t)
-        # return 4 * np.exp(t) + (Xs * (1 - Xs)) * np.exp(t)
-        # Source: linear combination of low-rank matrices
-        # if t < 0.1:
-        #     return C
-        # elif t < 0.2:
-        #     return C * (1 + 100 * (t - 0.1))
-        # elif t < 0.3:
-        #     return C * (1 + 100 * (0.2 - 0.1) - 100 * (t - 0.2))
-        # else:
-        #     return C
-        # D = D * np.exp((t - 0.5)**2/0.01) * 0.01
-        # output = SVD.reduced_svd((A.dot(long_sol) + A.T.dot(long_sol.T).T))
         sing_vals = np.logspace(0, -14, num=8)
         X1 = SVD(Q, sing_vals, Q)
         sing_vals_mid = np.logspace(0, -7, num=8)
@@ -187,12 +174,6 @@ def make_lyapunov_heat_square_with_time_dependent_special(size: int = 128, q: in
         else:
             return X1.dot(A, side='left') + X1.dot(A)
 
-        # sing_vals = np.asarray([1, np.exp(t), np.exp(2*t), np.exp(4*t), np.exp(8*t)])
-        # sing_vals = np.sort(np.asarray([t, (2*t)**2, (3*t)**3, np.sqrt(1/2 * t), 0.5]))
-        # sing_vals= np.asarray([1, np.sin(t)**2, np.cos(t)**2, np.sin(2*t)**2, np.cos(2*t)**2])
-        # output = SVD(Q, sing_vals, Q)
-        
-        # return output #+ D * np.exp((t - 0.5)**2/0.01) * 0.000001
     
     ## DEFINE THE ODE
     ode = SylvesterLikeOde(A, A, G)
