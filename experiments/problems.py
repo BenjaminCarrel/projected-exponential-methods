@@ -96,11 +96,13 @@ def make_lyapunov_heat_square_with_time_dependent_source(size: int = 128, q: int
         f[k] = np.sqrt(2) * np.sin(2 * np.pi * k * xs)
     c = np.concatenate((ones, e, f))
     C = SVD.truncated_svd(c.T.dot(c))
+    sing_vals_D = np.logspace(0, -15, num=8)
+    D = SVD.generate_random((size, size), sing_vals_D, seed=2222, is_symmetric=True)
     def G(t, X):
         # return 4 * np.exp(t) + (Xs * (1 - Xs) + Ys * (1 - Ys)) * np.exp(t)
         # return 4 * np.exp(t) + (Xs * (1 - Xs)) * np.exp(t)
         # Source: linear combination of low-rank matrices
-        return (C * np.exp(4*t)).todense()
+        return (C * (np.exp(4*t) + np.sin(2 * np.pi * t) + np.cos(2 * np.pi * t))).todense() + (D * (t**4 + t**3 + t**2 + t + 1)).todense()
     
     ## DEFINE THE ODE
     ode = SylvesterLikeOde(A, A, G)
