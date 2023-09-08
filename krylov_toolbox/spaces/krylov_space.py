@@ -74,8 +74,14 @@ class KrylovSpace(SpaceStructure):
         else:
             self.matvec = lambda x: A.dot(x)
 
-        # Initialize the basis
-        self.Q, self.H = la.qr(X, mode="reduced")
+        # Symmetric case -> Lanczos algorithm
+        if self.is_symmetric:
+            self._alpha = np.empty(self.n, dtype=object)
+            self._beta = np.empty(self.n, dtype=object)
+            self.Q, self._beta[0] = la.qr(X, mode="reduced")
+        # Non symmetric case -> Arnoldi algorithm
+        else:
+            self.Q, self.H = la.qr(X, mode="reduced")
 
 
     #%% PROPERTIES
@@ -106,8 +112,24 @@ class KrylovSpace(SpaceStructure):
         m = self.m
         AQ = self.matvec(self.Q[:, (m - 2) * r : (m - 1) * r])
 
-        # QR insertion
-        self.Q, self.H = sla.qr_insert(self.Q, self.H, AQ, (m - 1) * r, which="col")
+        # Symmetric case (Lanczos)
+        if self.is_symmetric:
+            Q = np.zeros((self.n, m * r), dtype=self.Q.dtype)
+            Q[:, : (m - 1) * r] = self.Q
+            self._alpha[m-1] = Q[:, (m - 2) * r : (m - 1) * r].T.dot(AQ)
+            AQ -= Q[:, (m - 2) * r : (m - 1) * r].dot(self._alpha[m-1])
+            if m > 2:
+                AQ-= Q[:, (m - 3) * r : (m - 2) * r].dot(self._beta[m-2].T)
+            Q[:, (m - 1) * r : m * r], self._beta[m-1] = la.qr(AQ, mode="reduced")
+            self.Q = Q
+
+        # Non-symmetric case (scipy's qr_insert)
+        else:
+            self.Q, self.H = sla.qr_insert(self.Q, self.H, AQ, (m - 1) * r, which="col")
+
+        
+
+        
 
 
 

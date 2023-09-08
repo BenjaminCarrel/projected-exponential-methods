@@ -101,7 +101,8 @@ class ExtendedKrylovSpace(SpaceStructure):
     
     @property
     def Q(self) -> ndarray:
-        Q, _ = la.qr_insert(self.Q1, self.H1, self.Q2, self.m * self.r, which="col")
+        # Q, _ = la.qr_insert(self.Q1, self.H1, self.Q2, self.m * self.r, which="col")
+        Q = la.qr(np.hstack((self.Q1, self.Q2)), mode="economic")[0]
         return Q
 
     @property
