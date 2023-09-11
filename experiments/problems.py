@@ -102,8 +102,9 @@ def make_lyapunov_heat_square_with_time_dependent_source(size: int = 128, q: int
         # return 4 * np.exp(t) + (Xs * (1 - Xs) + Ys * (1 - Ys)) * np.exp(t)
         # return 4 * np.exp(t) + (Xs * (1 - Xs)) * np.exp(t)
         # Source: linear combination of low-rank matrices
-        return (C * np.exp(4 * t)).todense()
-        # return (C * (np.exp(4*t) + np.sin(2 * np.pi * t) + np.cos(2 * np.pi * t))).todense() + (D * (t**4 + t**3 + t**2 + t + 1)).todense()
+        # return C + X.dot(X)
+        return C * np.exp(-4*t)
+            # return (C * (np.exp(4*t) + np.sin(2 * np.pi * t) + np.cos(2 * np.pi * t))).todense() + (D * (t**4 + t**3 + t**2 + t + 1)).todense()
     
     ## DEFINE THE ODE
     ode = SylvesterLikeOde(A, A, G)
