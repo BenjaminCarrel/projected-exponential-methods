@@ -11,7 +11,8 @@ import scipy.sparse.linalg as spala
 from matrix_ode_toolbox.dlra import DlraSolver
 from matrix_ode_toolbox import SylvesterLikeOde
 from low_rank_toolbox import LowRankMatrix, SVD, QuasiSVD
-from krylov_toolbox import ExtendedKrylovSpace, RationalKrylovSpace
+from krylov_toolbox import KrylovSpace, ExtendedKrylovSpace, RationalKrylovSpace
+from matrix_ode_toolbox.phi import sylvester_combined_phi_k
 from numpy import ndarray
 
 
@@ -25,7 +26,7 @@ class ProjectedExponentialRungeKutta(DlraSolver):
     The methods aim at solving the Sylvester-like ODE
         X'(t) = A X(t) + X(t) B + G(t, X),
         X(0) = X0.
-    See Carrel & Vandereycken (to appear).
+    See Carrel & Vandereycken (to be published, see README).
     """
 
     name = 'Projected exponential Runge-Kutta (PERK)'
@@ -34,7 +35,7 @@ class ProjectedExponentialRungeKutta(DlraSolver):
                  matrix_ode: SylvesterLikeOde,
                  nb_substeps: int = 1,
                  order: int = 1,
-                 krylov_kwargs: dict = {'kind': 'extended', 'size': 5},
+                 krylov_kwargs: dict = {'kind': 'extended', 'size': 1},
                  strict_order_conditions: bool = True,
                  **extra_args) -> None:
         
@@ -68,8 +69,23 @@ class ProjectedExponentialRungeKutta(DlraSolver):
             self.left_krylov_args['poles'] = krylov_kwargs['poles']
             self.right_krylov_args['poles'] = krylov_kwargs['poles']
             self.Krylov_space = RationalKrylovSpace
+        elif self.krylov_kind == 'polynomial':
+            self.Krylov_space = KrylovSpace
         else:
             raise ValueError(f'Krylov kind {self.krylov_kind} not implemented.')
+        # Check closed form argument
+        if 'use_closed_form' in extra_args:
+            self.use_closed_form = extra_args['use_closed_form']
+            del extra_args['use_closed_form']
+        else:
+            self.use_closed_form = True # Fast but Sylvester operator must be invertible
+            print('Warning: closed form solver is used by default. The Sylvester operator must be invertible. If your operator is not invertible, set use_closed_form=False.')
+        # pop extra agrs for scipy solver
+        if 'scipy_method' in extra_args:
+            self.scipy_method = extra_args['scipy_method']
+            del extra_args['scipy_method']
+        else:
+            self.scipy_method = 'LSODA' # default solver is scipy's LSODA for automatic stiffness detection
         
         # If the rank decreases, we need to store the original rank
         self.rank = None
@@ -145,6 +161,110 @@ class ProjectedExponentialRungeKutta(DlraSolver):
 
         return Vk, Wk
     
+    def exp_sylvester(self, h: float, A: Matrix, B: Matrix, X: Matrix) -> Matrix:
+        "Shortcut for computing the matrix exponential."
+        Z = spala.expm_multiply(A, X, start=0, stop=h, endpoint=True, num=2)[-1]
+        Z = spala.expm_multiply(B.T.conj(), Z.T.conj(), start=0, stop=h, endpoint=True, num=2)[-1].T.conj()
+        return Z
+    
+    def solve_sylvester_one_ode(self, h: float, A: Matrix, B: Matrix, X0: SVD, X1: SVD) -> QuasiSVD:
+        "Solve the Sylvester ODE X' = AX + XB + X1, X(0) = X0."
+        ## Compute the two Krylov spaces
+        Qk, Wk = self.compute_Krylov_basis([X0, X1])
+        ## Reduced matrices
+        A_reduced = Qk.T.conj().dot(A.dot(Qk))
+        B_reduced = Wk.T.conj().dot(B.dot(Wk))
+        X0_reduced = X0.dot(Wk).dot(Qk.T.conj(), side='left').todense()
+        X1_reduced = X1.dot(Wk).dot(Qk.T.conj(), side='left').todense()
+        ## Solve reduced ODE (closed form)
+        if self.use_closed_form:
+            C = la.solve_sylvester(A_reduced, B_reduced, X1_reduced) # NOTE: the Sylvester operator must be invertible
+            Z = X0_reduced + C
+            Z = self.exp_sylvester(h, A_reduced, B_reduced, Z)
+            S1 = Z - C
+            output = QuasiSVD(Qk, S1, Wk)
+        ## Solve reduced ODE (default solver is scipy's LSODA for automatic stiffness detection)
+        else:
+            S1 = sylvester_combined_phi_k(A_reduced, B_reduced, h, k=1, X=[X0_reduced, X1_reduced], solver='scipy', scipy_method=self.scipy_method)
+            output = QuasiSVD(Qk, S1, Wk)
+        return output
+    
+    def solve_sylvester_two_ode(self, h: float, A: Matrix, B: Matrix, X0: SVD, X1: SVD, X2: SVD) -> QuasiSVD:
+        """
+        Solve the Sylvester ODE:
+            X'(t) = AX + XB + X1 + t/h * X2, 
+            X(0) = X0.
+        The computation are done efficiently by reducing the problem with Krylov spaces.
+        The reduced problem is solved with a closed form formula or with scipy.
+        
+        """
+        ## Compute the two Krylov spaces
+        Qk, Wk = self.compute_Krylov_basis([X0, X1, X2])
+        ## Reduced matrices
+        A_reduced = Qk.T.conj().dot(A.dot(Qk))
+        B_reduced = Wk.T.conj().dot(B.dot(Wk))
+        X0_reduced = X0.dot(Wk).dot(Qk.T.conj(), side='left').todense()
+        X1_reduced = X1.dot(Wk).dot(Qk.T.conj(), side='left').todense()
+        X2_reduced = X2.dot(Wk).dot(Qk.T.conj(), side='left').todense()
+        ## Solve reduced ODE (closed form)
+        if self.use_closed_form:
+            # Split computations over kernel and range
+            NA = la.null_space(A_reduced)
+            OA = la.orth(A_reduced)
+            NB = la.null_space(B_reduced)
+            OB = la.orth(B_reduced)
+
+            # Compute the projected matrices A and B
+            Ar_reduced = np.linalg.multi_dot([OA, OA.T.conj(), A_reduced, OA, OA.T.conj()])
+            A_zero = np.zeros(A_reduced.shape)
+            Br_reduced = np.linalg.multi_dot([OB, OB.T.conj(), B_reduced, OB, OB.T.conj()])
+            B_zero = np.zeros(B_reduced.shape)
+
+            # Compute the projected matrices X0, X1 and X2
+            X01 = np.linalg.multi_dot([NA, NA.T, X0_reduced, NB, NB.T])
+            X02 = np.linalg.multi_dot([NA, NA.T, X0_reduced, OB, OB.T])
+            X03 = np.linalg.multi_dot([OA, OA.T, X0_reduced, NB, NB.T])
+            X04 = np.linalg.multi_dot([OA, OA.T, X0_reduced, OB, OB.T])
+            X11 = np.linalg.multi_dot([NA, NA.T, X1_reduced, NB, NB.T])
+            X12 = np.linalg.multi_dot([NA, NA.T, X1_reduced, OB, OB.T])
+            X13 = np.linalg.multi_dot([OA, OA.T, X1_reduced, NB, NB.T])
+            X14 = np.linalg.multi_dot([OA, OA.T, X1_reduced, OB, OB.T])
+            X21 = np.linalg.multi_dot([NA, NA.T, X2_reduced, NB, NB.T])
+            X22 = np.linalg.multi_dot([NA, NA.T, X2_reduced, OB, OB.T])
+            X23 = np.linalg.multi_dot([OA, OA.T, X2_reduced, NB, NB.T])
+            X24 = np.linalg.multi_dot([OA, OA.T, X2_reduced, OB, OB.T])
+
+            # Define the solver
+            def closed_form_solver(A, B, X0, X1, X2):
+                # Solve the Sylvester equations
+                D = la.solve_sylvester(A, B, X2)
+                D_hat = la.solve_sylvester(A, B, 1/h * D)
+                C = la.solve_sylvester(A, B, X1)
+                # Assemble
+                Z = X0 + C + D_hat
+                Z = self.exp_sylvester(h, A, B, Z)
+                S = Z - C - D_hat - D
+                return S
+            
+            # Compute on each projected matrix
+            ## On the Kernel
+            S1 = X01 + X11 + h/2 * X21
+            ## A = 0, B = Br_reduced
+            S2 = closed_form_solver(A_zero, Br_reduced, X02, X12, X22)
+            ## A = Ar_reduced, B = 0
+            S3 = closed_form_solver(Ar_reduced, B_zero, X03, X13, X23)
+            ## A = Ar_reduced, B = Br_reduced
+            S4 = closed_form_solver(Ar_reduced, Br_reduced, X04, X14, X24)
+
+            # Assemble
+            S = S1 + S2 + S3 + S4
+            output = QuasiSVD(Qk, S, Wk)
+        ## Solve reduced ODE (with scipy LSODA for automatic stiffness detection)
+        else:
+            S2 = sylvester_combined_phi_k(A_reduced, B_reduced, h, k=2, X=[X0_reduced, X1_reduced, 1/h * X2_reduced], solver='scipy', scipy_method=self.scipy_method)
+            output = QuasiSVD(Qk, S2, Wk)
+        return output
+    
     def projected_exponential_Euler(self, t_subspan: tuple, Y0: SVD) -> SVD:
         """
         Projected exponential Euler.
@@ -161,29 +281,16 @@ class ProjectedExponentialRungeKutta(DlraSolver):
         GY0 = self.matrix_ode.non_stiff_field(t0, Y0)
         PGY0 = Y0.project_onto_tangent_space(GY0)
 
-        # COMPUTE THE INNER TERM: exp(hL) (Y0) + h phi(hL) (P(Y0)[G(Y0)])
-        ## Two Krylov spaces (left and right)
-        Qk, Wk = self.compute_Krylov_basis([Y0, PGY0])
-        ## Reduced matrices
-        A_reduced = Qk.T.conj().dot(self.matrix_ode.A.dot(Qk))
-        B_reduced = Wk.T.conj().dot(self.matrix_ode.B.dot(Wk))
-        PGY0_reduced = PGY0.dot(Wk).dot(Qk.T.conj(), side='left').todense()
-        Y0_reduced = Y0.dot(Wk).dot(Qk.T.conj(), side='left').todense()
-        ## Solve reduced ODE (closed form) 
-        C = la.solve_sylvester(A_reduced, B_reduced, PGY0_reduced) # NOTE: the Sylvester operator must be invertible
-        Z = Y0_reduced + C
-        Z = spala.expm_multiply(A_reduced, Z, start=0, stop=h, endpoint=True, num=2)[-1]
-        Z = spala.expm_multiply(B_reduced.T.conj(), Z.T.conj(), start=0, stop=h, endpoint=True, num=2)[-1].T.conj()
-        S1 = Z - C
+        # SOLVE THE EQUIVALENT ODE
+        Y1 = self.solve_sylvester_one_ode(h, self.matrix_ode.A, self.matrix_ode.B, Y0, PGY0)
 
-        # ASSEMBLE AND RETRACT
-        Y1 = QuasiSVD(Qk, S1, Wk)
+        # RETRACT
         Y1 = self.retraction(Y1)
         return Y1
     
     def projected_exponential_Runge_non_strict(self, t_subspan: tuple, Y0: SVD) -> SVD:
         """
-        Projected exponential Runge method.
+        Projected exponential Runge method (weak). Not proven to be robust order 2.
         This method is not strictly order 2, see (Luan & Ostermann, 2014).
         Solves a matrix ODE of the form X' = AX + XB + G(X).
         Midpoint: Y_half = R( exp(h/2 L) (Y0) + h/2 phi(h/2 L) (P(Y0)[G(Y0)]) )
@@ -201,87 +308,43 @@ class ProjectedExponentialRungeKutta(DlraSolver):
         GY_half = self.matrix_ode.non_stiff_field(t0 + h_half, Y_half)
         PGY_half = Y_half.project_onto_tangent_space(GY_half)
 
-        # COMPUTE THE INNER TERM: exp(h L) (Y0) + h phi(h L) (P(Y_half)[G(Y_half)])
-        ## Two Krylov spaces (left and right)
-        Qk, Wk = self.compute_Krylov_basis([Y0, PGY_half])
-        ## Reduced matrices
-        A_reduced = Qk.T.conj().dot(self.matrix_ode.A.dot(Qk))
-        B_reduced = Wk.T.conj().dot(self.matrix_ode.B.dot(Wk))
-        PGY_half_reduced = PGY_half.dot(Wk).dot(Qk.T.conj(), side='left').todense()
-        Y0_reduced = Y0.dot(Wk).dot(Qk.T.conj(), side='left').todense()
-        ## Solve reduced ODE (with closed form)
-        C = la.solve_sylvester(A_reduced, B_reduced, PGY_half_reduced) # NOTE: the Sylvester operator must be invertible
-        Z = Y0_reduced + C
-        Z = spala.expm_multiply(A_reduced, Z, start=0, stop=h, endpoint=True, num=2)[-1]
-        Z = spala.expm_multiply(B_reduced.T.conj(), Z.T.conj(), start=0, stop=h, endpoint=True, num=2)[-1].T.conj()
-        S1 = Z - C
+        # STEP 3: SOLVE THE EQUIVALENT ODE
+        Y1 = self.solve_sylvester_one_ode(h, self.matrix_ode.A, self.matrix_ode.B, Y0, PGY_half)
 
-        # ASSEMBLE AND RETRACT
-        Y1 = QuasiSVD(Qk, S1, Wk)
+        # RETRACT
         Y1 = self.retraction(Y1)
         return Y1
     
     def projected_exponential_Runge_strict(self, t_subspan: tuple, Y0: SVD) -> SVD:
         """
-        Projected exponential Runge method. Version 2, which verifies the stiff order conditions.
+        Projected exponential Runge (strong) method with stiff order conditions. Proven to be robust order 2.
         Solves an equation of the form X' = AX + XB + G(X) = L(X) + G(X)
         The scheme is:
-        K1 = exp(h L) (Y0) + h * phi_1(h L) (P(Y0)[G(Y0)])
+        K1 = exp(c2 * h L) (Y0) + c2 * h * phi_1(c2 * h L) (P(Y0)[G(Y0)])
         RK1 = R(K1)
-        Y1 = K1 + h * phi_2(h L) (P(RK1)[G(RK1)] - P(Y0)[G(Y0)])
+        Y1 = exp(h L) (Y0) + h phi_1(h L) (P(Y0)[G(Y0)]) + h * phi_2(h L) (P(RK1)[G(RK1)] - P(Y0)[G(Y0)])
         """
         # VARIABLES
         t0, t1 = t_subspan
         h = t1 - t0
         c2 = 1
-        # print('Y0 rank:', Y0.rank)
 
         # STEP 1: PERK1
         GY0 = self.matrix_ode.non_stiff_field(t0, Y0)
         PGY0 = Y0.project_onto_tangent_space(GY0)
-        # print('PGY0 rank:', PGY0.rank)
-        # print('Theoretical max size:', 2 * (self.krylov_size +1) * 2 * Y0.rank)
-        Qk, Wk = self.compute_Krylov_basis([Y0, PGY0])
-        # print('Final dimension of the two bases:', Qk.shape, Wk.shape)
-        A_reduced = Qk.T.conj().dot(self.matrix_ode.A.dot(Qk))
-        B_reduced = Wk.T.conj().dot(self.matrix_ode.B.dot(Wk))
-        PGY0_reduced = PGY0.dot(Wk).dot(Qk.T.conj(), side='left').todense()
-        Y0_reduced = Y0.dot(Wk).dot(Qk.T.conj(), side='left').todense()
-        C = la.solve_sylvester(A_reduced, B_reduced, PGY0_reduced) # NOTE: the Sylvester operator must be invertible
-        Z = Y0_reduced + C
-        Z = spala.expm_multiply(A_reduced, Z, start=0, stop=c2 * h, endpoint=True, num=2)[-1]
-        Z = spala.expm_multiply(B_reduced.T.conj(), Z.T.conj(), start=0, stop=c2 * h, endpoint=True, num=2)[-1].T.conj()
-        S1 = Z - C
-        # print('Shape of first reduced ODE:', S1.shape)
-        K1 = QuasiSVD(Qk, S1, Wk)
+        K1 = self.solve_sylvester_one_ode(c2 * h, self.matrix_ode.A, self.matrix_ode.B, Y0, PGY0)
         RK1 = self.retraction(K1)
 
-        # STEP 2
-        ## Compute the projection: P(RK1)[G(RK1)]
+        # STEP 2: COMPUTE THE PROJECTION: P(RK1)[G(RK1)]
         GRK1 = self.matrix_ode.non_stiff_field(t0 + c2 * h, RK1)
         PGRK1 = RK1.project_onto_tangent_space(GRK1)
-        PGRK1_minus_PGRY0 = PGRK1 - PGY0
-        ## Two Krylov spaces
-        Qk, Wk = self.compute_Krylov_basis([Y0, PGY0, PGRK1_minus_PGRY0])
-        # print('Theoretical max size:', 2 * (self.krylov_size+1) * (2 * Y0.rank + PGRK1_minus_PGRY0.rank))
-        ## Reduced matrices
-        A_reduced = Qk.T.conj().dot(self.matrix_ode.A.dot(Qk))
-        B_reduced = Wk.T.conj().dot(self.matrix_ode.B.dot(Wk))
-        Y0_reduced = Y0.dot(Wk).dot(Qk.T.conj(), side='left').todense()
-        PGY0_reduced = PGY0.dot(Wk).dot(Qk.T.conj(), side='left').todense()
-        PGRK1_minus_PGRY0_reduced = PGRK1_minus_PGRY0.dot(Wk).dot(Qk.T.conj(), side='left').todense()
-        ## Solve reduced ODE (closed form)
-        D = la.solve_sylvester(A_reduced * c2, B_reduced * c2, PGRK1_minus_PGRY0_reduced)
-        D_hat = la.solve_sylvester(A_reduced * h, B_reduced * h, D)
-        C = la.solve_sylvester(A_reduced, B_reduced, PGY0_reduced)
-        Z = Y0_reduced + C + D_hat
-        Z = spala.expm_multiply(A_reduced, Z, start=0, stop=h, endpoint=True, num=2)[-1]
-        Z = spala.expm_multiply(B_reduced.T.conj(), Z.T.conj(), start=0, stop=h, endpoint=True, num=2)[-1].T.conj()
-        S2 = Z - C - D_hat - D
-        # print('Shape of second reduced ODE:', S2.shape)
+        PGRK1_minus_PGY0 = PGRK1 - PGY0
 
-        # ASSEMBLE AND TRUNCATE
-        Y1 = QuasiSVD(Qk, S2, Wk)
+        # STEP 3: SOLVE THE EQUIVALENT ODE
+        Y1 = self.solve_sylvester_two_ode(h, self.matrix_ode.A, self.matrix_ode.B, Y0, PGY0, PGRK1_minus_PGY0)
+
+        # RETRACT
         Y1 = self.retraction(Y1)
         return Y1
+
 
