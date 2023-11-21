@@ -234,7 +234,12 @@ class QuasiSVD(LowRankMatrix):
 
     def __imul__(self, other: float | Matrix) -> Matrix:
         """In-place scalar multiplication, or hadamard product if other is a matrix"""
-        np.multiply(self.S, other, out=self.S)
+        if isinstance(other, Matrix):
+            self = self.hadamard(other)
+        else:
+            if type(other) == np.complex128 or type(other) == complex:
+                self.S = np.asarray(self.S, dtype=np.complex128)
+            np.multiply(self.S, other, out=self.S)
         return self
 
     def __mul__(self, other: float | Matrix) -> Matrix:
@@ -276,7 +281,43 @@ class QuasiSVD(LowRankMatrix):
         else:
             return super().dot(other, side, dense_output)
 
+    def hadamard(self, other: QuasiSVD | Matrix, truncate: bool = automatic_truncation) -> QuasiSVD | Matrix:   
+        """Hadamard product between two QuasiSVD matrices
+        
+        The new rank is the multiplication of the two ranks, at maximum.
+        The default behavior depends on the value of automatic_truncation.
+        If automatic_truncation is True, the output is truncated to ensure non-singularity of S.
+        If automatic_truncation is False, the output is not truncated and can be singular.
+        NOTE: if the rank is too large, dense matrices are used for the computation, but the output is still an SVD.
 
+        Parameters
+        ----------
+        other : QuasiSVD or Matrix
+            Matrix to multiply
+        """
+        if isinstance(other, QuasiSVD):
+            # If the new rank is too large, it is more efficient to use the full matrix
+            if self.rank * other.rank >= min(self.shape):
+                # print(f"Large rank ({self.rank * other.rank}) due to Hadamard product. Using full matrix ({self.shape}).")
+                warnings.warn(f"Large rank due to Hadamard product. Using full matrix.")
+                output = np.multiply(self.full(), other.full())
+                output = SVD.from_dense(output) # convert to SVD, otherwise it is inconsistent
+            else:    
+                # The new matrices U and V are obtained from transposed Khatri-Rao products
+                new_U = la.khatri_rao(self.Uh, other.Uh).T.conj()
+                new_V = la.khatri_rao(self.Vh, other.Vh).T.conj()
+                # The new singular values are obtained from the Kronecker product
+                new_S = np.kron(self.S, other.S)
+                output = QuasiSVD(new_U, new_S, new_V)
+                if truncate:
+                    output = output.truncate(atol=default_atol)
+        elif isinstance(other, LowRankMatrix):
+            warnings.warn("Hadamard product between QuasiSVD and LowRankMatrix is not efficient.")
+            output = np.multiply(self.full(), other.full())
+        else:
+            warnings.warn("Hadamard product between QuasiSVD and ndarray is not efficient.")
+            output = np.multiply(self.full(), other)
+        return output
     
 #%% Define class SVD
 class SVD(QuasiSVD):
@@ -492,4 +533,17 @@ class SVD(QuasiSVD):
         else:
             return SVD(U, s, V)
 
-        
+    def hadamard(self, other: Matrix | SVD, truncate: bool = automatic_truncation) -> Matrix | SVD:
+        """Faster version of the Hadamard product for SVDs."""
+        if isinstance(other, SVD) and not self.rank * other.rank >= min(self.shape):
+            # The new matrices U and V are obtained from transposed Khatri-Rao products
+            new_U = la.khatri_rao(self.Uh, other.Uh).T.conj()
+            new_V = la.khatri_rao(self.Vh, other.Vh).T.conj()
+            # The new singular values are obtained from the Kronecker product
+            new_S = np.kron(self.sing_vals, other.sing_vals)
+            output = SVD(new_U, new_S, new_V)
+            if truncate:
+                output = output.truncate(atol=default_atol)
+        else:
+            output = super().hadamard(other)
+        return output

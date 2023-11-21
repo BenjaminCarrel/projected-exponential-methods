@@ -67,7 +67,7 @@ class LowRankMatrix:
         return len(self.shape)
 
     @property
-    def T(self):
+    def T(self) -> LowRankMatrix:
         # reverse order of matrices and transpose each element
         new_matrix = self.copy()
         new_matrix._matrices = [M.T for M in reversed(self._matrices)]
@@ -323,8 +323,11 @@ class LowRankMatrix:
         if dense_output:
             return new_mat.to_dense()
         return new_mat
-
-
+    
+    def hadamard(self, other: LowRankMatrix | ndarray) -> LowRankMatrix:
+        """Hadamard product of two low-rank matrices"""
+        return np.multiply(self.to_dense(), other.to_dense())
+    
     @staticmethod
     def create_matrix_alias(index: int, transpose=False, conjugate=False) -> property:
         if transpose and conjugate:
