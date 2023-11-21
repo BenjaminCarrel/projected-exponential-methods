@@ -82,7 +82,7 @@ class KrylovSpace(SpaceStructure):
         # Non symmetric case -> Arnoldi algorithm
         else:
             self.Q, self.H = la.qr(X, mode="reduced")
-
+        self.Q = np.array(self.Q, dtype=self.dtype)
 
     #%% PROPERTIES
     @property

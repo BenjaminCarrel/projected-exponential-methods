@@ -42,6 +42,11 @@ class SpaceStructure:
         if X.ndim == 1:
             X = X.reshape(-1, 1)
 
+        # Data type
+        self.dtype = A.dtype
+        if X.dtype != self.dtype:
+            self.dtype = np.promote_types(A.dtype, X.dtype)
+
         # Store inputs
         self.A = A
         self.X = X
@@ -104,5 +109,9 @@ class SpaceStructure:
         """Augment the space with a new basis. Overload this method in the child class."""
         return NotImplementedError("The augment method is not implemented in the parent class.")
 
-
+    def compute_all(self):
+        """Compute all the basis vectors. Overload this method in the child class."""
+        # Use the augment_basis method max_iter times
+        for _ in range(self.max_iter):
+            self.augment_basis()
 
