@@ -11,6 +11,7 @@ import numpy as np
 from low_rank_toolbox import SVD, LowRankMatrix
 from matrix_ode_toolbox.integrate import solve_matrix_ivp
 from matrix_ode_toolbox.dlra import solve_adaptive_dlra
+import time
 nb_steps = 100
 
 #%% Setup the ODE
@@ -70,7 +71,8 @@ plt.ylabel("Relative error in Frobenius norm")
 plt.ylim(1e-12, 1e-1)
 plt.show()
 
-fig.savefig(f'figures/{X0.shape}_adaptive_PERK_error_with_tolerances_{tolerances}_and_{nb_steps}_steps.pdf', bbox_inches='tight')
+timestamp = time.strftime("%Y_%m_%d-%H_%M_%S")
+fig.savefig(f'figures/{X0.shape}_adaptive_PERK_error_with_tolerances_{tolerances}_and_{nb_steps}_steps_{timestamp}.pdf', bbox_inches='tight')
 
 #%% Adaptive PERK - Extract and plot the rank over time
 ranks = np.zeros((nb_t_steps, len(tolerances)))
@@ -87,7 +89,8 @@ plt.xlabel("Time")
 plt.ylabel("Rank")
 plt.show()
 
-fig.savefig(f'figures/{X0.shape}_adaptive_PERK_rank_with_tolerances_{tolerances}_and_{nb_steps}_steps.pdf', bbox_inches='tight')
+timestamp = time.strftime("%Y_%m_%d-%H_%M_%S")
+fig.savefig(f'figures/{X0.shape}_adaptive_PERK_rank_with_tolerances_{tolerances}_and_{nb_steps}_steps_{timestamp}.pdf', bbox_inches='tight')
 
 
 

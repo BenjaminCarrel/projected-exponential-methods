@@ -101,8 +101,8 @@ plt.ylim(1e-9, 1e-1)
 plt.tight_layout()
 plt.show()
 
-
-fig.savefig(f'figures/{X0.shape}_global_error_T_{t_span[1]}_ranks_{ranks}_nb_steps_{list_nb_steps}.pdf', bbox_inches='tight')
+timestamp = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
+fig.savefig(f'figures/{X0.shape}_global_error_T_{t_span[1]}_ranks_{ranks}_nb_steps_{list_nb_steps}_{timestamp}.pdf', bbox_inches='tight')
 
 
 # %% PERFORMANCE - PLOT
@@ -117,6 +117,7 @@ plt.gca().invert_xaxis()
 plt.tight_layout()
 plt.show()
 
-fig.savefig(f'figures/{X0.shape}_performance_T_{t_span[1]}_ranks_{ranks}_nb_steps_{list_nb_steps}.pdf', bbox_inches='tight')
+timestamp = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
+fig.savefig(f'figures/{X0.shape}_performance_T_{t_span[1]}_ranks_{ranks}_nb_steps_{list_nb_steps}_{timestamp}.pdf', bbox_inches='tight')
 
 # %%

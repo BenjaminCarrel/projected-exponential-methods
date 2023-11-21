@@ -11,6 +11,7 @@ import numpy as np
 from low_rank_toolbox import SVD
 from matrix_ode_toolbox.integrate import solve_matrix_ivp
 from matrix_ode_toolbox.dlra import solve_dlra
+import time
 
 #%% SETUP THE ODE
 t_span = (0, 1)
@@ -101,6 +102,7 @@ plt.xlabel("Size (mesh refinement)")
 plt.ylabel("Relative error in Frobenius norm")
 plt.show()
 
-fig.savefig(f'figures/{X0.shape}_sizes_{sizes}_errors_methods_{methods_labels}_without_cond_numbers.pdf', bbox_inches='tight')
+timestamp = time.strftime("%Y_%m_%d-%H_%M_%S")
+fig.savefig(f'figures/{X0.shape}_sizes_{sizes}_errors_methods_{methods_labels}_without_cond_numbers_{timestamp}.pdf', bbox_inches='tight')
 
 # %%

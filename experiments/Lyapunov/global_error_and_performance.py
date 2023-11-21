@@ -118,7 +118,8 @@ plt.ylim([1e-9, 1e3])
 plt.tight_layout()
 plt.show()
 
-fig.savefig(f'figures/{X0.shape}_global_error_T_{t_span[1]}_rank_{rank}_nb_steps_{nb_steps}.pdf', bbox_inches='tight')
+timestamp = time.strftime("%Y_%m_%d-%H_%M_%S")
+fig.savefig(f'figures/{X0.shape}_global_error_T_{t_span[1]}_rank_{rank}_nb_steps_{nb_steps}_{timestamp}.pdf', bbox_inches='tight')
 
 #%% PERFORMANCE - PLOT
 fig = plt.figure()
@@ -132,6 +133,7 @@ plt.ylabel("Time of computation (s)")
 plt.tight_layout()
 plt.show()
 
-fig.savefig(f'figures/{X0.shape}_perf_T_{t_span[1]}_rank_{rank}_nb_steps_{nb_steps}.pdf', bbox_inches='tight')
+timestamp = time.strftime("%Y_%m_%d-%H_%M_%S")
+fig.savefig(f'figures/{X0.shape}_perf_T_{t_span[1]}_rank_{rank}_nb_steps_{nb_steps}_{timestamp}.pdf', bbox_inches='tight')
 
 # %%

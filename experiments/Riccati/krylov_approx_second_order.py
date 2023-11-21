@@ -14,6 +14,7 @@ from krylov_toolbox import KrylovSpace, ExtendedKrylovSpace, RationalKrylovSpace
 from scipy import linalg as la
 from matrix_ode_toolbox.integrate import solve_matrix_ivp
 from matrix_ode_toolbox import SylvesterOde
+import time
 
 #%% SETUP THE ODE
 print('Generating the problem...')
@@ -300,7 +301,8 @@ plt.ylim([1e-14, 1e4])
 plt.legend(loc='upper right')
 plt.show()
 
-fig.savefig(f'figures/{X0.shape}_krylov_error_two_T_{t_span[1]}_rank_{rank}_nb_iter_{nb_krylov_iter}.pdf', bbox_inches='tight')
+timestamp = time.strftime("%Y_%m_%d-%H_%M_%S")
+fig.savefig(f'figures/{X0.shape}_krylov_error_two_T_{t_span[1]}_rank_{rank}_nb_iter_{nb_krylov_iter}_{timestamp}.pdf', bbox_inches='tight')
 
 
 # %%

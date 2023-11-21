@@ -103,7 +103,8 @@ plt.xlabel("Size (mesh refinement)")
 plt.ylabel("Relative error in Frobenius norm")
 plt.show()
 
-fig.savefig(f'figures/{X0.shape}_sizes_{sizes}_errors_methods_{methods_labels}_without_cond_numbers.pdf', bbox_inches='tight')
+timestamp = time.strftime("%Y_%m_%d-%H_%M_%S")
+fig.savefig(f'figures/{X0.shape}_sizes_{sizes}_errors_methods_{methods_labels}_{timestamp}.pdf', bbox_inches='tight')
 
 
 # %% ROBUST TO STIFFNESS - PERFORMANCE
@@ -115,8 +116,10 @@ plt.legend()
 plt.xlabel("Size (mesh refinement)")
 plt.xticks(sizes, sizes)
 plt.ylabel("Time of computation (s)")
+plt.ylim([2, 1e2])
 plt.show()
 
-fig.savefig(f'figures/{X0.shape}_sizes_{sizes}_times_methods_{methods_labels}.pdf', bbox_inches='tight')
+timestamp = time.strftime("%Y_%m_%d-%H_%M_%S")
+fig.savefig(f'figures/{X0.shape}_sizes_{sizes}_times_methods_{methods_labels}_{timestamp}.pdf', bbox_inches='tight')
 
 # %%
