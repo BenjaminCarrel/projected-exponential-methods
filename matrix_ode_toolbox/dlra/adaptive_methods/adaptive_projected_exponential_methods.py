@@ -52,6 +52,7 @@ class AdaptiveProjectedExponentialMethods(AdaptiveDlraSolver):
         self.krylov_kind = solver.krylov_kind
         self.size_factor = solver.size_factor
 
+    @property
     def info(self) -> str:
         """Return the info string."""
         info = f'Adaptive PERK \n'
@@ -59,7 +60,7 @@ class AdaptiveProjectedExponentialMethods(AdaptiveDlraSolver):
         info += f'-- {self.order} stages \n'
         info += f'-- Strict order conditions: {self.strict_order_conditions} \n'
         info += f'-- {self.krylov_kind} Krylov space and {self.krylov_size} iteration(s) \n'
-        info += f'-- Largest matrix shape: ({2 * self.size_factor * self.krylov_size * self.order}*rank, {2 * self.size_factor * self.krylov_size * self.order}*rank) \n'
+        info += f'-- Largest matrix shape: ({2 * self.size_factor * self.krylov_size * self.order}*(max. rank), {2 * self.size_factor * self.krylov_size * self.order}*(max. rank)) \n'
         info += f'-- Relative tolerance = {self.rtol} \n'
         info += f'-- Absolute tolerance = {self.atol}'
         return info

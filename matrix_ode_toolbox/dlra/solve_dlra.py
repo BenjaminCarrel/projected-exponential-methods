@@ -247,7 +247,7 @@ def solve_adaptive_dlra(matrix_ode: MatrixOde,
     ## Monitor
     if monitor:
         print('----------------------------------------')
-        print(f'{solver.info()}')
+        print(f'{solver.info}')
         loop = tqdm(np.arange(n-1), desc=f'Solving adaptive DLRA')
     else:
         loop = np.arange(n-1)

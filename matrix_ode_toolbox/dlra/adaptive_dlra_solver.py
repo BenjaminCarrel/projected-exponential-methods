@@ -36,6 +36,7 @@ class AdaptiveDlraSolver(DlraSolver):
         self.rtol = rtol
         self.atol = atol
 
+    @property
     def info(self) -> str:
         """Return the info string."""
         info = f'General adaptive DLRA \n'
