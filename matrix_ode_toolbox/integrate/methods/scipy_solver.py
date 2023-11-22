@@ -35,7 +35,9 @@ class ScipySolver(MatrixOdeSolver):
     def info(self) -> str:
         info = f'Scipy solver \n'
         info += f'-- {self.scipy_method} method \n'
-        info += f'-- {self.nb_substeps} substep(s)'
+        info += f'-- {self.nb_substeps} substep(s) \n'
+        info += f'-- Relative tolerance: {self.rtol} \n'
+        info += f'-- Absolute tolerance: {self.atol}'
         return info
 
     def stepper(self, t_span: tuple, X0: Matrix):
