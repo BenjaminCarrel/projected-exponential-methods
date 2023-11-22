@@ -52,10 +52,10 @@ methods_styles += ['-x']
 
 #%% COMPUTE THE SOLUTIONS
 # Parameters
-nb_steps = 1000
+nb_steps = 100
 ts = np.linspace(t_span[0], t_span[1], nb_steps+1)
-sizes = [32, 64, 96, 128, 192]
-rank = 8
+sizes = [32, 64, 96, 128, 160, 196, 224, 256]
+rank = 4
 
 # Preallocate the errors
 errors = np.zeros((len(sizes), len(dlra_solvers)))
@@ -74,7 +74,7 @@ for i, n in enumerate(sizes):
     # cond_numbers[i] = la.cond(ode.A.todense())
 
     ## COMPUTE REFERENCE SOLUTION
-    X1 = solve_matrix_ivp(ode, t_span, X0, solver="automatic", t_eval=ts, monitor=True, dense_output=True).X1
+    X1 = solve_matrix_ivp(ode, t_span, X0, solver="automatic", t_eval=ts, monitor=True, dense_output=True, scipy_method='RK45', atol=1e-6, rtol=1e-6).X1
     approx_errors[i] = np.linalg.norm(X1 - SVD.truncated_svd(X1, rank).todense(), 'fro') / np.linalg.norm(X1, 'fro')
 
     ## LOOP OVER THE METHODS
@@ -98,7 +98,7 @@ plt.tight_layout()
 # x-axis in log scale power of 2
 plt.xticks(sizes, sizes)
 plt.legend()
-plt.ylim([1e-10, 1e0])
+plt.ylim([1e-6, 1e2])
 plt.xlabel("Size (mesh refinement)")
 plt.ylabel("Relative error in Frobenius norm")
 plt.show()
@@ -112,11 +112,11 @@ fig = plt.figure()
 for j, method in enumerate(dlra_solvers):
     plt.semilogy(sizes, times[:, j], methods_styles[j], label=methods_labels[j])
 plt.tight_layout()
-plt.legend()
+plt.legend(loc='upper left')
 plt.xlabel("Size (mesh refinement)")
 plt.xticks(sizes, sizes)
 plt.ylabel("Time of computation (s)")
-plt.ylim([2, 1e2])
+# plt.ylim([0, 1e2])
 plt.show()
 
 timestamp = time.strftime("%Y_%m_%d-%H_%M_%S")
