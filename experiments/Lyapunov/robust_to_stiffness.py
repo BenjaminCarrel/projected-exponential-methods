@@ -54,7 +54,7 @@ methods_styles += ['-x']
 # Parameters
 nb_steps = 100
 ts = np.linspace(t_span[0], t_span[1], nb_steps+1)
-sizes = [32, 64, 96, 128, 160, 196, 224, 256]
+sizes = [96, 128, 160, 192, 224, 256]
 rank = 4
 
 # Preallocate the errors
