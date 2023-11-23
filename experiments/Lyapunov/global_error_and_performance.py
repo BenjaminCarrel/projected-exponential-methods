@@ -114,7 +114,7 @@ plt.axhline(best_approx_error, linestyle='--', color='gray', label=f'Best approx
 plt.legend(loc='upper left')
 plt.xlabel("Step size")
 plt.ylabel("Relative error in Frobenius norm")
-plt.ylim([1e-9, 1e3])
+plt.ylim([1e-9, 1e2])
 plt.tight_layout()
 plt.show()
 

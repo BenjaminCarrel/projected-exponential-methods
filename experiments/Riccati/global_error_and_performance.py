@@ -70,7 +70,7 @@ methods_styles += ['-+']
 #%% GLOBAL ERROR AND PERFORMANCE - COMPUTATIONS
 
 # Number of steps
-nb_steps = np.logspace(1, 3, 4, dtype=int)
+nb_steps = np.logspace(1, 4, 8, dtype=int)
 stepsizes = t_span[1] / nb_steps
 
 # Preallocate
@@ -109,7 +109,7 @@ plt.axhline(best_approx_error, linestyle='--', color='gray', label=f'Best approx
 plt.legend(loc='upper left')
 plt.xlabel("Step size")
 plt.ylabel("Relative error in Frobenius norm")
-plt.ylim([1e-9, 1e3])
+plt.ylim([1e-10, 1e3])
 plt.tight_layout()
 plt.show()
 
