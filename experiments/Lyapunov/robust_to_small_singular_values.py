@@ -36,7 +36,7 @@ invB = spala.splu(ode.B).solve
 ranks = [4, 7, 11, 16]
 
 # Number of steps
-list_nb_steps = np.logspace(1, 5, 10, dtype=int)
+list_nb_steps = np.logspace(1, 4.8, 10, dtype=int)
 
 # Method parameters - PERK
 method = 'PERK'

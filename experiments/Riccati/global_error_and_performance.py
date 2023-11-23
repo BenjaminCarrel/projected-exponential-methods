@@ -51,7 +51,7 @@ methods_styles += ['-o']
 ## Projected exponential Runge (strict)
 dlra_solvers += ['PERK']
 methods_kwargs += [{'order': 2, 'krylov_kwargs': {'size': 1, 'kind': 'extended', 'is_symmetric': True, 'invA': invA, 'invB': invB}, 'strict_order_conditions': True}]
-methods_labels += ['Proj. exponential Runge (strict)']
+methods_labels += ['Proj. exponential Runge']
 methods_styles += ['-x']
 
 # Methods parameters - LOW-RANK SPLITTING
@@ -103,8 +103,8 @@ best_approx_error = np.linalg.norm(X1 - SVD.truncated_svd(X1, rank).todense(), '
 fig = plt.figure()
 for j, method in enumerate(dlra_solvers):
     plt.loglog(stepsizes, global_errors[:, j], methods_styles[j], label=methods_labels[j])
-plt.loglog(stepsizes, 4*stepsizes, 'k') # , label=r'$O(h)$'
-plt.loglog(stepsizes, 4*stepsizes**2, 'k') # , label=r'$O(h^2)$'
+plt.loglog(stepsizes, 0.2*stepsizes, 'k') # , label=r'$O(h)$'
+plt.loglog(stepsizes, 0.2*stepsizes**2, 'k') # , label=r'$O(h^2)$'
 plt.axhline(best_approx_error, linestyle='--', color='gray', label=f'Best approx. error ($r={rank}$)')
 plt.legend(loc='upper left')
 plt.xlabel("Step size")
