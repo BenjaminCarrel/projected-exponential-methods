@@ -39,7 +39,7 @@ def make_allen_cahn(size: int):
     ode = SylvesterLikeOde(A, A, G)
 
     ## INITIAL VALUE
-    u = lambda x, y: (np.exp(-np.tan(x)**2) + np.exp(-np.tan(x)**2)) * np.sin(x) * np.sin(y) / (1 + np.exp(np.abs(1/np.sin(-x/2))) + np.exp(np.abs(1/np.sin(-y/2))))
+    u = lambda x, y: (np.exp(-np.tan(x)**2) + np.exp(-np.tan(y)**2)) * np.sin(x) * np.sin(y) / (1 + np.exp(np.abs(1/np.sin(-x/2))) + np.exp(np.abs(1/np.sin(-y/2))))
     f = lambda x, y: u(x,y) # - u(x, 2*y) + u(3*x + np.pi, 3*y + np.pi) - 2*u(4*x, 4*y) + 2 * u(5*x, 5*y)
     X0 = f(X, Y)
     X0 = SVD.truncated_svd(X0)
