@@ -104,7 +104,7 @@ plt.ylabel("Relative error in Frobenius norm")
 plt.show()
 
 timestamp = time.strftime("%Y_%m_%d-%H_%M_%S")
-fig.savefig(f'figures/{X0.shape}_sizes_{sizes}_errors_methods_{methods_labels}_{timestamp}.pdf', bbox_inches='tight')
+fig.savefig(f'figures/errors_sizes_{sizes}_methods_{methods_labels}_{timestamp}.pdf', bbox_inches='tight')
 
 
 # %% ROBUST TO STIFFNESS - PERFORMANCE
@@ -120,6 +120,6 @@ plt.ylabel("Time of computation (s)")
 plt.show()
 
 timestamp = time.strftime("%Y_%m_%d-%H_%M_%S")
-fig.savefig(f'figures/{X0.shape}_sizes_{sizes}_times_methods_{methods_labels}_{timestamp}.pdf', bbox_inches='tight')
+fig.savefig(f'figures/times_sizes_{sizes}_methods_{methods_labels}_{timestamp}.pdf', bbox_inches='tight')
 
 # %%

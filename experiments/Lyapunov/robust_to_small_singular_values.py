@@ -102,7 +102,7 @@ plt.tight_layout()
 plt.show()
 
 timestamp = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
-fig.savefig(f'figures/{X0.shape}_global_error_T_{t_span[1]}_ranks_{ranks}_nb_steps_{list_nb_steps}_{timestamp}.pdf', bbox_inches='tight')
+fig.savefig(f'figures/small_singular_values_error_size_{X0.shape}_T_{t_span[1]}_ranks_{ranks}_nb_steps_{list_nb_steps}_{timestamp}.pdf', bbox_inches='tight')
 
 
 # %% PERFORMANCE - PLOT
@@ -118,6 +118,6 @@ plt.tight_layout()
 plt.show()
 
 timestamp = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
-fig.savefig(f'figures/{X0.shape}_performance_T_{t_span[1]}_ranks_{ranks}_nb_steps_{list_nb_steps}_{timestamp}.pdf', bbox_inches='tight')
+fig.savefig(f'figures/small_singular_values_performance_{X0.shape}_T_{t_span[1]}_ranks_{ranks}_nb_steps_{list_nb_steps}_{timestamp}.pdf', bbox_inches='tight')
 
 # %%

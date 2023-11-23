@@ -103,6 +103,6 @@ plt.ylabel("Relative error in Frobenius norm")
 plt.show()
 
 timestamp = time.strftime("%Y_%m_%d-%H_%M_%S")
-fig.savefig(f'figures/{X0.shape}_sizes_{sizes}_errors_methods_{methods_labels}_without_cond_numbers_{timestamp}.pdf', bbox_inches='tight')
+fig.savefig(f'figures/motivating_example_sizes_{sizes}_methods_{methods_labels}_{timestamp}.pdf', bbox_inches='tight')
 
 # %%
