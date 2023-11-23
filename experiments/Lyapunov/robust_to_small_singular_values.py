@@ -36,13 +36,13 @@ invB = spala.splu(ode.B).solve
 ranks = [4, 7, 11, 16]
 
 # Number of steps
-list_nb_steps = np.logspace(1, 4.8, 10, dtype=int)
+list_nb_steps = np.logspace(1, 5, 10, dtype=int)
 
 # Method parameters - PERK
 method = 'PERK'
 invA = spala.inv(ode.A).dot
 invB = spala.inv(ode.B).dot
-krylov_kwargs = {'size': 1, 
+krylov_kwargs = {'size': 2, 
                  'kind': 'extended', 
                  'is_symmetric': True, 
                  'invA': invA, 
