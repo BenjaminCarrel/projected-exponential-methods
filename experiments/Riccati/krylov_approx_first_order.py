@@ -15,7 +15,7 @@ from scipy import linalg as la
 import time
 
 #%% SETUP THE ODE
-print('Generating the problem...')
+print('Generating problem...')
 size = 200
 q = 9
 t_span = (0, 0.1)
@@ -88,9 +88,9 @@ Zk = closed_form_solver(h, A_reduced, B_reduced, Y0_reduced, PGY0_reduced)
 Y1_reduced = Vk.dot(Zk.dot(Wk.T.conj()))
 
 # Compute the error and store the current size
-krylov_error[0] = la.norm(Y1_full - Y1_reduced) / la.norm(Y1_full)
+krylov_error[0] = la.norm(Y1_full - Y1_reduced, 'fro')
 krylov_space_size[0] = left_krylov_space.Q.shape[1]
-print("Iteration: k=0, size of space: {}, current error: {}".format(krylov_space_size[0], krylov_error[0]))
+print("Iteration: k=1, size of space: {}, current error: {}".format(krylov_space_size[0], krylov_error[0]))
 
 # Loop over the iterations
 for i in np.arange(1, nb_krylov_iter):
@@ -111,9 +111,9 @@ for i in np.arange(1, nb_krylov_iter):
     Y1_reduced = Vk.dot(Zk.dot(Wk.T.conj()))
 
     # Compute the error and store the current size
-    krylov_error[i] = la.norm(Y1_full - Y1_reduced) / la.norm(Y1_full)
+    krylov_error[i] = la.norm(Y1_full - Y1_reduced, 'fro')
     krylov_space_size[i] = left_krylov_space.Q.shape[1]
-    print("Iteration: k={}, size of space: {}, current error: {}".format(i, krylov_space_size[i], krylov_error[i]))
+    print("Iteration: k={}, size of space: {}, current error: {}".format(i+1, krylov_space_size[i], krylov_error[i]))
 
 print("Done!")
 
@@ -148,9 +148,9 @@ Zk = closed_form_solver(h, A_reduced, B_reduced, Y0_reduced, PGY0_reduced)
 Y1_reduced = Vk.dot(Zk.dot(Wk.T.conj()))
 
 # Compute the error and store the current size
-extended_krylov_error[0] = la.norm(Y1_full - Y1_reduced) / la.norm(Y1_full)
+extended_krylov_error[0] = la.norm(Y1_full - Y1_reduced)
 extended_krylov_space_size[0] = left_extended_krylov_space.Q.shape[1]
-print("Iteration: k={}, size of space: {}, current error: {}".format(0, extended_krylov_space_size[0], extended_krylov_error[0]))
+print("Iteration: k={}, size of space: {}, current error: {}".format(1, extended_krylov_space_size[0], extended_krylov_error[0]))
 
 # Loop over the iterations
 for i in np.arange(1, nb_extended_krylov_iter):
@@ -171,9 +171,9 @@ for i in np.arange(1, nb_extended_krylov_iter):
     Y1_reduced = Vk.dot(Zk.dot(Wk.T.conj()))
 
     # Compute the error and store the current size
-    extended_krylov_error[i] = la.norm(Y1_full - Y1_reduced) / la.norm(Y1_full)
+    extended_krylov_error[i] = la.norm(Y1_full - Y1_reduced, 'fro')
     extended_krylov_space_size[i] = left_extended_krylov_space.Q.shape[1]
-    print("Iteration: k={}, size of space: {}, current error: {}".format(i, extended_krylov_space_size[i], extended_krylov_error[i]))
+    print("Iteration: k={}, size of space: {}, current error: {}".format(i+1, extended_krylov_space_size[i], extended_krylov_error[i]))
 
 print("Done!")
 
@@ -205,9 +205,9 @@ Zk = closed_form_solver(h, A_reduced, B_reduced, Y0_reduced, PGY0_reduced)
 Y1_reduced = Vk.dot(Zk.dot(Wk.T.conj()))
 
 # Compute the error and store the current size
-rational_krylov_error[0] = la.norm(Y1_full - Y1_reduced) / la.norm(Y1_full)
+rational_krylov_error[0] = la.norm(Y1_full - Y1_reduced, 'fro')
 rational_krylov_space_size[0] = left_rational_krylov_space.Q.shape[1]
-print("Iteration: k={}, size of space: {}, current error: {}".format(0, rational_krylov_space_size[0], rational_krylov_error[0]))
+print("Iteration: k={}, size of space: {}, current error: {}".format(1, rational_krylov_space_size[0], rational_krylov_error[0]))
 
 # Loop over the iterations
 for i in np.arange(1, nb_krylov_iter):
@@ -219,6 +219,7 @@ for i in np.arange(1, nb_krylov_iter):
     Vk = left_rational_krylov_space.Q
     Wk = right_rational_krylov_space.Q
     A_reduced = Vk.T.conj().dot(A.dot(Vk))
+    eigA = la.eig(A, return_eigenvectors=False)
     B_reduced = Wk.T.conj().dot(B.dot(Wk))
     Y0_reduced = Y0.dot(Wk).dot(Vk.T.conj(), side='left')
     PGY0_reduced = PGY0.dot(Wk).dot(Vk.T.conj(), side='left')
@@ -228,31 +229,32 @@ for i in np.arange(1, nb_krylov_iter):
     Y1_reduced = Vk.dot(Zk.dot(Wk.T.conj()))
 
     # Compute the error and store the current size
-    rational_krylov_error[i] = la.norm(Y1_full - Y1_reduced) / la.norm(Y1_full)
+    rational_krylov_error[i] = la.norm(Y1_full - Y1_reduced, 'fro')
     rational_krylov_space_size[i] = left_rational_krylov_space.Q.shape[1]
-    print("Iteration: k={}, size of space: {}, current error: {}".format(i, rational_krylov_space_size[i], rational_krylov_error[i]))
+    print("Iteration: k={}, size of space: {}, current error: {}".format(i+1, rational_krylov_space_size[i], rational_krylov_error[i]))
 
 print("Done!")
 
 # %% KRYLOV APPROXIMATION ERROR - THEORETICAL BOUND
 # Bound derived in the paper
-def bound(k, t, A, B, Y0, PGY0, factor):
-    # Eigenvalues of A and B
-    eigA = spala.eigs(A, return_eigenvectors=False)
-    eigB = spala.eigs(B, return_eigenvectors=False)
-    # Mus
-    muA = np.max(eigA)
-    muB = np.max(eigB)
-    mu = np.max([muA, muB])
-    # Norms
-    norm_Y0 = Y0.norm()
-    norm_PGY0 = PGY0.norm()
+def bound(k, t, mu, norm_Y0, norm_PGY0, factor):
     # Bound
-    bd = np.sqrt(size) * 4 * np.sqrt(2) / (factor**k) * (np.exp(t * mu) * norm_Y0 + (np.exp(t * mu) - 1)/mu * norm_PGY0)
+    bd = 4 * np.sqrt(2) / (factor**(k-1)) * (np.exp(t * mu) * norm_Y0 + (np.exp(t * mu) - 1)/mu * norm_PGY0)
     return bd
 
-bound1 = bound(np.arange(nb_krylov_iter), t_span[1], A, B, Y0, PGY0, 3)
-bound2 = bound(np.arange(nb_krylov_iter), t_span[1], A, B, Y0, PGY0, 9.037)
+# Eigenvalues of A and B
+eigA = la.eig(A.todense(), right=False)
+eigB = la.eig(B.todense(), right=False)
+# Mus
+muA = np.max(eigA)
+muB = np.max(eigB)
+mu = np.max([muA, muB])
+# Norms
+norm_Y0 = la.norm(Y0.todense(), 'fro')
+norm_PGY0 = la.norm(PGY0.todense(), 'fro')
+
+bound1 = bound(np.arange(nb_krylov_iter)+1, h, mu, norm_Y0, norm_PGY0, 3)
+bound2 = bound(np.arange(nb_krylov_iter)+1, h, mu, norm_Y0, norm_PGY0, 9.037)
 
 # %% KRYLOV APPROXIMATION ERROR - PLOT
 # Plot the results
@@ -267,7 +269,7 @@ plt.axhline(1e-12, color='k', linestyle='-', label="Tolerance")
 plt.xlabel("Size of the approximation space")
 plt.xticks(rational_krylov_space_size)
 plt.ylabel("Relative error in Frobenius norm")
-plt.ylim([1e-14, 1e4])
+plt.ylim([1e-13, 1e5])
 plt.legend(loc='upper right')
 plt.show()
 
