@@ -48,8 +48,8 @@ for i, t in enumerate(time_to_plot):
     rotated_img = ndimage.rotate(Xs_ref[frame_number], 0)
     im = axs[i].imshow(rotated_img, cmap='jet', extent=[0, 2*np.pi, 0, 2*np.pi], interpolation='bilinear')
     axs[i].set_title('t = {:.2f}'.format(t), fontsize=24)
-    axs[i].set_xticks([0, np.pi, 2*np.pi], [0, r'$\pi$', r'$2\pi$'], fontsize=24)
-    axs[i].set_yticks([0, np.pi, 2*np.pi], [0, r'$\pi$', r'$2\pi$'], fontsize=24)
+    axs[i].set_xticks([0, np.pi, 2*np.pi], [0, r'$\pi$', r'$2\pi$'], fontsize=20)
+    axs[i].set_yticks([0, np.pi, 2*np.pi], [0, r'$\pi$', r'$2\pi$'], fontsize=20)
     # axs[i].set_xlabel(r'$x$')
     # axs[i].set_ylabel(r'$y$')
     axs[i].grid(False)
@@ -57,7 +57,9 @@ for i, t in enumerate(time_to_plot):
 # Move the color bar outside of the plots
 divider = make_axes_locatable(axs[-1])
 cax = divider.append_axes("bottom", size="5%", pad=0.5)
-fig.colorbar(im, cax=cax, orientation='horizontal')
+cbar = fig.colorbar(im, cax=cax, orientation='horizontal')
+cbar.set_ticks([-1, 0, 1])
+cbar.ax.tick_params(labelsize=24)
 
 plt.tight_layout()
 
@@ -104,7 +106,9 @@ for i, t in enumerate(time_to_plot):
 # Move the color bar outside of the plots
 divider = make_axes_locatable(axs[-1])
 cax = divider.append_axes("bottom", size="5%", pad=0.5)
-fig.colorbar(im, cax=cax, orientation='horizontal')
+cbar = fig.colorbar(im, cax=cax, orientation='horizontal')
+cbar.set_ticks([-1, 0, 1])
+cbar.ax.tick_params(labelsize=20)
 
 plt.tight_layout()
 
@@ -134,6 +138,9 @@ for i, t in enumerate(time_to_plot):
 divider = make_axes_locatable(axs[-1])
 cax = divider.append_axes("bottom", size="5%", pad=0.5)
 cbar = fig.colorbar(im, cax=cax, orientation='horizontal')
+cbar.ax.tick_params(labelsize=20)
+cbar.ax.xaxis.get_offset_text().set_fontsize(20)
+
 
 plt.tight_layout()
 
