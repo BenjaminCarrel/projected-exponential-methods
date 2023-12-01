@@ -16,3 +16,7 @@ build/
 
 # Data
 *.pkl
+
+# old folders
+old/
+experiments/old/
