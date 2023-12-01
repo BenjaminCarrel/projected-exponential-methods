@@ -1,4 +1,4 @@
-## Experiments folders
+## Experiments folder
 
 This folder contains the code for reproducing the experiments made in the paper.
 
