@@ -2,11 +2,12 @@
 
 ## Abstract
 
-(To be updated with the published abstract)
+The numerical integration of stiff equations is a challenging problem that needs to be approached by specialized numerical methods. Exponential integrators form a popular class of such methods since they are provably robust to stiffness and have been successfully applied to a variety of problems. The dynamical low- rank approximation is a recent technique for solving high-dimensional differential equations by means of low-rank approximations. However, the domain is lacking numerical methods for stiff equations since existing methods are either not robust- to-stiffness or have unreasonably large hidden constants.
+In this paper, we focus on solving large-scale stiff matrix differential equations with a Sylvester-like structure, that admit good low-rank approximations. We propose two new methods that have good convergence properties, small memory footprint and that are fast to compute. The theoretical analysis shows that the new methods have order one and two, respectively. We also propose a practical implementation based on Krylov techniques. The approximation error is analyzed, leading to a priori error bounds and, therefore, a mean for choosing the size of the Krylov space. Numerical experiments are performed on several examples, confirming the theory and showing good speedup in comparison to existing techniques.
 
 ## Authors
 
-- Benjamin Carrel (University of Geneva)
+- [Benjamin Carrel](benjamin.carrel@unige.ch) (University of Geneva)
 - Bart Vandereycken (University of Geneva)
 
 ## Reference
@@ -21,7 +22,7 @@ Those experiments are written in Python and each file corresponds to a figure in
 All experiments can be run on a laptop, but experiments with small step sizes might take a long time (hours) to run. You can reduce the number of time steps to reduce the computation time.
 
 If you have any question or issue while running the experiments, please contact me at
-benjamin.carrel@unige.ch.
+[benjamin.carrel@unige.ch](benjamin.carrel@unige.ch).
 
 ## Installation
 
