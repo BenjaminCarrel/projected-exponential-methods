@@ -13,7 +13,20 @@ In this paper, we focus on solving large-scale stiff matrix differential equatio
 ## Reference
 
 The paper has been submitted to a journal and is currently under review.
-It is available on [arXiv](https://arxiv.org/abs/2312.00172).
+It is available on [arXiv](https://arxiv.org/abs/2312.00172) with DOI number arXiv:2312.00172.
+
+To cite the preprint, you can use the following BibTeX entry:
+
+```
+@misc{carrel2023projected,
+      title={Projected exponential methods for stiff dynamical low-rank approximation problems}, 
+      author={Benjamin Carrel and Bart Vandereycken},
+      year={2023},
+      eprint={2312.00172},
+      archivePrefix={arXiv},
+      primaryClass={math.NA}
+}
+```
 
 ## Experiments
 
