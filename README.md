@@ -22,10 +22,14 @@ Those experiments are written in Python and each file corresponds to a figure in
 
 All experiments can be run on a laptop, but experiments with small step sizes might take a long time (hours) to run. You can reduce the number of time steps to reduce the computation time.
 
+The experiments in the paper were done with [Release 1.0](https://github.com/BenjaminCarrel/projected-exponential-methods/releases/tag/arXiv). 
+
 If you have any question or issue while running the experiments, please contact me at
 [benjamin.carrel@unige.ch](benjamin.carrel@unige.ch).
 
 ## Installation
+
+Download the current version of the code from GitHub or download the [Release 1.0](https://github.com/BenjaminCarrel/projected-exponential-methods/releases/tag/arXiv).
 
 ### Conda
 
