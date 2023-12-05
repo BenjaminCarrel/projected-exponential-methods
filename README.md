@@ -12,7 +12,8 @@ In this paper, we focus on solving large-scale stiff matrix differential equatio
 
 ## Reference
 
-(To be updated when published)
+The paper has been submitted to a journal and is currently under review.
+It is available on [arXiv](https://arxiv.org/abs/2312.00172).
 
 ## Experiments
 
