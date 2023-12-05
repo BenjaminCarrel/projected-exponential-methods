@@ -16,7 +16,6 @@ The paper has been submitted to a journal and is currently under review.
 It is available on [arXiv](https://arxiv.org/abs/2312.00172) with DOI number arXiv:2312.00172.
 
 To cite the preprint, you can use the following BibTeX entry:
-
 ```
 @misc{carrel2023projected,
       title={Projected exponential methods for stiff dynamical low-rank approximation problems}, 
@@ -25,6 +24,21 @@ To cite the preprint, you can use the following BibTeX entry:
       eprint={2312.00172},
       archivePrefix={arXiv},
       primaryClass={math.NA}
+}
+```
+
+You might want to cite this specific code, which you can do through [Zenodo DOI number 10262073](https://zenodo.org/records/10262073) with the following Bibtex entry:
+```
+@software{benjamin_carrel_2023_10262073,
+  author       = {Benjamin Carrel},
+  title        = {{BenjaminCarrel/projected-exponential-methods: 
+                   Zenodo Release 1.0}},
+  month        = dec,
+  year         = 2023,
+  publisher    = {Zenodo},
+  version      = {Zenodo},
+  doi          = {10.5281/zenodo.10262073},
+  url          = {https://doi.org/10.5281/zenodo.10262073}
 }
 ```
 
