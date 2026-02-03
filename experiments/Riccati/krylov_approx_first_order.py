@@ -219,7 +219,7 @@ for i in np.arange(1, nb_krylov_iter):
     Vk = left_rational_krylov_space.Q
     Wk = right_rational_krylov_space.Q
     A_reduced = Vk.T.conj().dot(A.dot(Vk))
-    eigA = la.eig(A, return_eigenvectors=False)
+    eigA = la.eigvals(A.todense())
     B_reduced = Wk.T.conj().dot(B.dot(Wk))
     Y0_reduced = Y0.dot(Wk).dot(Vk.T.conj(), side='left')
     PGY0_reduced = PGY0.dot(Wk).dot(Vk.T.conj(), side='left')
@@ -263,7 +263,7 @@ plt.semilogy(krylov_space_size, krylov_error, 'o-', label="Polynomial Krylov")
 plt.semilogy(extended_krylov_space_size, extended_krylov_error, 'o-', label="Extended Krylov")
 plt.semilogy(rational_krylov_space_size, rational_krylov_error, 'o-', label="Rational Krylov (repeated poles)")
 # plt.semilogy(rational_krylov_space_size, rational_krylov_error_opti, 'o-', label="Rational Krylov (optimal poles)")
-plt.semilogy(rational_krylov_space_size, bound1, '--', label="Bound with factor 3 (Theorem 4.3)")
+plt.semilogy(rational_krylov_space_size, bound1, '--', label="Bound with factor 3 (Theorem 5.18)")
 plt.semilogy(rational_krylov_space_size, bound2, '--', label="Asymptotic bound with factor 9.037")
 plt.axhline(1e-12, color='k', linestyle='-', label="Tolerance")
 plt.xlabel("Size of the approximation space")
